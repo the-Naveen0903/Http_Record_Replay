@@ -11,21 +11,22 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class HttpClientAgent 
 {
-  //store HTTP responses
+  //store recorded HTTP responses and database result sets
   private static final Map<String, String> recordHttpResponse = new HashMap<>();
-  // store database results
   private static final Map<String, ResultSet> recordedDbResults = new HashMap<>();
 
   //initializing Java agent
   public static void premain(String agentArgs, Instrumentation inst) 
   {
+    //Patch the HttpClient and JDBC driver classes
     patchHttpClient(inst);
     patchJdbcDriver(inst);
   }
 
-  
+  //HttpClient class to intercept the 'send' method
   private static void patchHttpClient(Instrumentation inst) 
   {
     new AgentBuilder.Default()
@@ -37,6 +38,7 @@ public class HttpClientAgent
         .installOn(inst);
   }
 
+  //JDBC driver class to intercept the executeQuery method
   private static void patchJdbcDriver(Instrumentation inst) 
   {
     new AgentBuilder.Default()
@@ -54,24 +56,34 @@ public class HttpClientAgent
   {
     public static Object intercept(@This Object obj, @Origin Method method, @AllArguments Object[] args) 
     {
-      String mode = System.getenv("HT_MODE");
+
+      String mode = System.getenv("HT_MODE"); //Checking HT_MODE environment variable
+
       if (mode == null || mode.equals("RECORD")) 
       {
+        //RECORD mode
         HttpRequest request = (HttpRequest) args[0];
         String url = request.uri().toString();
+
         try 
         {
+          //Executing the original send method
           HttpResponse<String> response = (HttpResponse<String>) method.invoke(obj, args);
+
           if (mode != null) 
           {
+            //Record the HTTP response
             recordHttpResponse.put(url, response.body());
           }
           return response;
         } 
+
         catch (Exception e) 
         {
           if (mode != null) 
           {
+            //Record the error message
+          
             recordHttpResponse.put(url, "Error: " + e.getMessage());
           }
           throw e;
@@ -79,12 +91,16 @@ public class HttpClientAgent
       } 
       else 
       {
+        //Replay mode
         HttpRequest request = (HttpRequest) args[0];
         String url = request.uri().toString();
-        return HttpResponse.BodySubscribers.ofString(recordHttpResponse.get(url));
+
+        return HttpResponse.BodySubscribers.ofString(recordHttpResponse.get(url)); // Return the recorded HTTP response
       }
     }
   }
+
+  //Interceptor class for the JDBC driver
 
   public static class StatementInterceptor 
   {
@@ -93,9 +109,10 @@ public class HttpClientAgent
       String mode = System.getenv("HT_MODE");
       if (mode == null || mode.equals("RECORD")) 
       {
+        // RECORD mode
         try 
         {
-          ResultSet resultSet = (ResultSet) method.invoke(obj, args);
+          ResultSet resultSet = (ResultSet) method.invoke(obj, args); //Executing the original executeQuery method
           if (mode != null) 
           {
             recordedDbResults.put(args[0].toString(), resultSet);
@@ -109,8 +126,9 @@ public class HttpClientAgent
       } 
       else 
       {
-        return recordedDbResults.get(args[0].toString());
+        return recordedDbResults.get(args[0].toString()); // REPLAY mode - Return the recorded database result set
       }
     }
+
   }
 }

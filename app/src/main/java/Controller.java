@@ -37,13 +37,18 @@ public class Controller
   public ResponseEntity<Map<String, String>> createNewPost(@RequestBody Map<String, String> request) 
   {
     Map<String, String> response = new HashMap<>();
+
     String mode = System.getenv("HT_MODE");
+
     if (mode == null || mode.equals("RECORD")) 
     {
+
       String postName = request.get("post_name");
       String postContents = request.get("post_contents");
+
       String dbPost = insertIntoDatabase(postName, postContents);
       response.put("db_post", dbPost);
+
       String httpResponse = makeHttpCall(httpEndpoint);
       response.put("http_outbound", httpResponse);
     } 
@@ -62,10 +67,13 @@ public class Controller
     {
       String sql = "INSERT INTO posts (name, contents) VALUES (?, ?)";
       PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+
       stmt.setString(1, postName);
       stmt.setString(2, postContents);
       stmt.executeUpdate();
+
       ResultSet rs = stmt.getGeneratedKeys();
+
       if (rs.next()) {
         long id = rs.getLong(1);
         return "Database row with ID: " + id;
@@ -87,6 +95,7 @@ public class Controller
       HttpRequest request = HttpRequest.newBuilder()
           .uri(URI.create(url))
           .build();
+      
       HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
       return response.body();
     } 
