@@ -17,8 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-public class Controller {
+public class Controller 
+{
 
+  //Initializing default values from properties file.
   @Value("${http.endpoint}")
   private String httpEndpoint;
 
@@ -32,25 +34,32 @@ public class Controller {
   private String databasePassword;
 
   @PostMapping("/api/createNewPost")
-  public ResponseEntity<Map<String, String>> createNewPost(@RequestBody Map<String, String> request) {
+  public ResponseEntity<Map<String, String>> createNewPost(@RequestBody Map<String, String> request) 
+  {
     Map<String, String> response = new HashMap<>();
     String mode = System.getenv("HT_MODE");
-    if (mode == null || mode.equals("RECORD")) {
+    if (mode == null || mode.equals("RECORD")) 
+    {
       String postName = request.get("post_name");
       String postContents = request.get("post_contents");
       String dbPost = insertIntoDatabase(postName, postContents);
       response.put("db_post", dbPost);
       String httpResponse = makeHttpCall(httpEndpoint);
       response.put("http_outbound", httpResponse);
-    } else {
+    } 
+    else 
+    {
       response.put("db_post", "Hardcoded database row for replay mode");
       response.put("http_outbound", "Hardcoded HTTP response for replay mode");
     }
     return ResponseEntity.ok(response);
   }
 
-  private String insertIntoDatabase(String postName, String postContents) {
-    try (Connection conn = DriverManager.getConnection(databaseUrl, databaseUsername, databasePassword)) {
+  //Inserting data into the database
+  private String insertIntoDatabase(String postName, String postContents) 
+  {
+    try (Connection conn = DriverManager.getConnection(databaseUrl, databaseUsername, databasePassword)) 
+    {
       String sql = "INSERT INTO posts (name, contents) VALUES (?, ?)";
       PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
       stmt.setString(1, postName);
@@ -61,21 +70,28 @@ public class Controller {
         long id = rs.getLong(1);
         return "Database row with ID: " + id;
       }
-    } catch (SQLException e) {
+    } 
+    catch (SQLException e) 
+    {
       return "Error: " + e.getMessage();
     }
     return "Error: Failed to insert into database";
   }
 
-  private String makeHttpCall(String url) {
-    try {
+  //Method to make an HTTP call
+  private String makeHttpCall(String url) 
+  {
+    try 
+    {
       HttpClient client = HttpClient.newHttpClient();
       HttpRequest request = HttpRequest.newBuilder()
           .uri(URI.create(url))
           .build();
       HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
       return response.body();
-    } catch (Exception e) {
+    } 
+    catch (Exception e) 
+    {
       return "Error: " + e.getMessage();
     }
   }

@@ -3,7 +3,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-public class Post {
+public class Post 
+{
 
     @Id
     @GeneratedValue
@@ -11,10 +12,13 @@ public class Post {
     private String name;
     private String contents;
 
-    public Post() {
+    public Post() 
+    {
+        //Emtpy Constuctor 
     }
 
-    public Post(String name, String contents) {
+    public Post(String name, String contents) 
+    {
         this.name = name;
         this.contents = contents;
     }
@@ -22,27 +26,33 @@ public class Post {
     // Getters and setters
 
 
-    public Long getId() {
+    public Long getId() 
+    {
         return id;
     } 
 
-    public void setId(Long id) {
+    public void setId(Long id) 
+    {
         this.id = id;
     }
 
-    public String getName() {
+    public String getName() 
+    {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name) 
+    {
         this.name = name;
     }
 
-    public String getContents() {
+    public String getContents() 
+    {
         return contents;
     }
 
-    public void setContents(String contents) {
+    public void setContents(String contents) 
+    {
         this.contents = contents;
     }
 
