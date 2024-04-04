@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class HttpClientAgent {
   private static final Map<String, String> recordHttpResponse = new HashMap<>();
-  private static final Map<String, ResultSet> recordedDatabaseResults = new HashMap<>();
+  private static final Map<String, ResultSet> recordedDbResults = new HashMap<>();
 
   public static void premain(String agentArgs, Instrumentation inst) {
     patchHttpClient(inst);
@@ -73,14 +73,14 @@ public class HttpClientAgent {
         try {
           ResultSet resultSet = (ResultSet) method.invoke(obj, args);
           if (mode != null) {
-            recordedDatabaseResults.put(args[0].toString(), resultSet);
+            recordedDbResults.put(args[0].toString(), resultSet);
           }
           return resultSet;
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
       } else {
-        return recordedDatabaseResults.get(args[0].toString());
+        return recordedDbResults.get(args[0].toString());
       }
     }
   }
