@@ -46,7 +46,7 @@ The solution is a composite of the following parts:
 
 ## Build and run
 
-1. Clone the repository: git clone https://github.com/the-Naveen0903/http-record-replay.git
+1. Clone the repository: git clone https://github.com/the-Naveen0903/Http-Record-Replay.git
 
 2. Construct the Docker image: docker build -t http-record-replay .
 
