@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpClientAgent {
-  private static final Map<String, String> recordedHttpResponses = new HashMap<>();
+  private static final Map<String, String> recordHttpResponse = new HashMap<>();
   private static final Map<String, ResultSet> recordedDatabaseResults = new HashMap<>();
 
   public static void premain(String agentArgs, Instrumentation inst) {
@@ -49,19 +49,19 @@ public class HttpClientAgent {
         try {
           HttpResponse<String> response = (HttpResponse<String>) method.invoke(obj, args);
           if (mode != null) {
-            recordedHttpResponses.put(url, response.body());
+            recordHttpResponse.put(url, response.body());
           }
           return response;
         } catch (Exception e) {
           if (mode != null) {
-            recordedHttpResponses.put(url, "Error: " + e.getMessage());
+            recordHttpResponse.put(url, "Error: " + e.getMessage());
           }
           throw e;
         }
       } else {
         HttpRequest request = (HttpRequest) args[0];
         String url = request.uri().toString();
-        return HttpResponse.BodySubscribers.ofString(recordedHttpResponses.get(url));
+        return HttpResponse.BodySubscribers.ofString(recordHttpResponse.get(url));
       }
     }
   }
