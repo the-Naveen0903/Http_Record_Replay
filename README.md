@@ -14,7 +14,7 @@ Under the ‘RECORD’ mode, the application should:
 
 2. It then inserts the post data into an actual database(PostgreSQL or MySQL).
 
-3. Making a call to “http://worldtimeapi.org/api/timezone/Asia/Kolkata” this will be like making an http call which will return Current time.
+3. Making a call to “http://worldtimeapi.org/api/timezone/Asia/Kolkata” this will be like making an http call.
 
 4. Then it returns a response that contains the generated ID of the database row and also HTTP response body.
 
@@ -37,12 +37,6 @@ The solution is a composite of the following parts:
 2. SpringBoot Application (Controller.java, Application.java, Post.java, PostRepository.java): The Spring Boot application has a controller that handles the '/api/createNewPost' endpoint which inserts data into the database using JDBC while an HTTP call is made by use of 'HttpClient' class. The response contains a generated ID of the database row as well as the HTTP response.
 
 3. Docker Setup (Dockerfile): The project includes a Dockerfile for building JARs for both Spring Boot application and Java agent, then creating a final image that runs Spring Boot application with loaded java agent throughwhich is done through -javaagent JVM argument.
-
-## Prerequisites
-
-- Java 11
-
-- Docker
 
 ## Build and run
 
@@ -69,9 +63,7 @@ docker run -e HT_MODE=REPLAY -e http.endpoint=http://example.com -e spring.datas
 
 - More work might be necessary to deal with errors and edge cases.
 
-- There is also need for further testing before this implementation can be used in production.
-
 
 ## Contribution
 
-Please, don’t hesitate to contact us if you encounter any problem or wish to suggest an enhancement, open an issue or submit a pull request.
+Please, don’t hesitate to contact me if you encounter any problem or wish to suggest an enhancement, open an issue or submit a pull request.
