@@ -28,4 +28,8 @@ ENV spring.datasource.url jdbc:postgresql://db-host:5432/postgres
 ENV spring.datasource.username postgres
 ENV spring.datasource.password secret
 
+#ENV HT_MODE REPLAY
+ENV HTTP_HOST 1.2.3.4:1234
+ENV DB_HOST 1.2.3.4:1234
+
 ENTRYPOINT ["java", "-javaagent:/agent.jar", "-jar", "/app.jar"]
