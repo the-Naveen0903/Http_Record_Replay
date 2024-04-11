@@ -68,7 +68,8 @@ public class HttpClientAgent
         try 
         {
           //Executing the original send method
-          HttpResponse<String> response = (HttpResponse<String>) method.invoke(obj, args);
+          HttpClient client = HttpClient.newHttpClient();
+          HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
           if (mode != null) 
           {
@@ -86,7 +87,7 @@ public class HttpClientAgent
           
             recordHttpResponse.put(url, "Error: " + e.getMessage());
           }
-          throw e;
+          throw new RuntimeException(e);
         }
       } 
       else 
@@ -95,7 +96,21 @@ public class HttpClientAgent
         HttpRequest request = (HttpRequest) args[0];
         String url = request.uri().toString();
 
-        return HttpResponse.BodySubscribers.ofString(recordHttpResponse.get(url)); // Return the recorded HTTP response
+        String httpHost = System.getenv("HTTP_HOST");
+        
+        if (httpHost != null) 
+        {
+          // Override the original HTTP host with the provided value
+          HttpRequest newRequest = HttpRequest.newBuilder()
+            .uri(URI.create("http://" + httpHost + request.uri().getPath()))
+            .headers(request.headers().map())
+            .build();
+            request = newRequest;
+         }
+
+          String responseBody = recordedHttpResponses.get(url);
+          return HttpResponse.BodySubscribers.ofString(responseBody != null ? responseBody : "");
+            
       }
     }
   }
@@ -110,25 +125,53 @@ public class HttpClientAgent
       if (mode == null || mode.equals("RECORD")) 
       {
         // RECORD mode
+
         try 
         {
-          ResultSet resultSet = (ResultSet) method.invoke(obj, args); //Executing the original executeQuery method
-          if (mode != null) 
-          {
-            recordedDbResults.put(args[0].toString(), resultSet);
-          }
+          // RECORD mode
+          PreparedStatement statement = (PreparedStatement) obj;
+          
+          ResultSet resultSet = statement.executeQuery(); // Executing the original executeQuery method
+          String sql = statement.toString();
+
+          recordedDbResults.put(sql, resultSet);
           return resultSet;
-        } 
+         } 
         catch (Exception e) 
         {
           throw new RuntimeException(e);
         }
+
       } 
       else 
       {
-        return recordedDbResults.get(args[0].toString()); // REPLAY mode - Return the recorded database result set
+        String sql = args[0].toString();
+        return recordedDbResults.get(sql); // Return the recorded database result set
       }
     }
 
   }
+
+  // Utility method to get a database connection
+    public static Connection getConnection() 
+    {
+      try {
+            String dbUrl = System.getenv("DB_URL");
+            String dbUser = System.getenv("DB_USER");
+            String dbPassword = System.getenv("DB_PASSWORD");
+            String dbHost = System.getenv("DB_HOST");
+
+            if (dbHost != null) 
+            {
+                // Override the original database host with the provided value
+                dbUrl = "jdbc:postgresql://" + dbHost + "/your-db-name";
+            }
+
+            return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+        } 
+      catch (Exception e) 
+      {
+        throw new RuntimeException(e);
+      }
+    }
 }
